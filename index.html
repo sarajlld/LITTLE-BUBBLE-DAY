@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#d5eeff" />
+  <meta name="description" content="손동작으로 돌아가는 어린 시절의 비눗방울 놀이" />
+  <title>작은 비눗방울의 날</title>
+  <!-- Approved V4 typefaces: intentionally unchanged. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main id="world" class="world" data-scene="illustration">
+    <div class="illustration" aria-hidden="true"></div>
+    <div class="soap-background" aria-hidden="true"></div>
+    <div class="first-game-background" aria-hidden="true"></div>
+    <!-- Webcam continuously feeds local hand tracking after consent. It is hidden in the soap and first-game scenes. -->
+    <video id="webcam" class="webcam" autoplay muted playsinline aria-label="웹캠 영상"></video>
+    <div class="camera-wash" aria-hidden="true"></div>
+    <canvas id="gameCanvas" aria-hidden="true"></canvas>
+
+    <section id="permissionScreen" class="layer" aria-label="카메라 사용 권한">
+      <div class="paper-box permission-box">
+        <h1>작은 비눗방울의 날</h1>
+        <p class="sentence">손끝으로 어린 시절의 비눗방울을 다시 만나 볼까요?</p>
+        <button id="allowCamera" class="paper-button" type="button">카메라 허용하기</button>
+        <p id="cameraWarning" class="warning sentence" role="status" aria-live="polite" hidden></p>
+      </div>
+    </section>
+
+    <section id="storyScreen" class="layer" aria-label="어린 시절의 이야기" hidden>
+      <div class="paper-box intro-box">
+        <h2>어릴 적 기억나요?</h2>
+        <p class="sentence">비누로 거품을 만들며 놀던 날을 기억하나요?</p>
+        <button id="storyStart" class="paper-button" type="button">기억 속으로 들어가기</button>
+      </div>
+    </section>
+
+    <section id="profileScreen" class="layer" aria-label="이름과 나이 입력" hidden>
+      <form id="profileForm" class="paper-box form-box" novalidate>
+        <h2>몇 살 때로 돌아가고 싶어요?</h2>
+        <label for="playerName">이름을 알려 주세요.</label>
+        <input id="playerName" type="text" maxlength="12" placeholder="이름" autocomplete="off" />
+        <label for="playerAge">돌아가고 싶은 나이를 입력해 주세요.</label>
+        <div class="age-box">
+          <input id="playerAge" type="text" inputmode="numeric" maxlength="2" placeholder="7" autocomplete="off" aria-describedby="ageHint" />
+          <span>살</span><small id="ageHint">10살까지 입력할 수 있어요.</small>
+        </div>
+        <button class="paper-button" type="submit">그때로 가 볼까요?</button>
+      </form>
+    </section>
+
+    <section id="memoryScreen" class="layer" aria-label="어린 시절로 이동 중" hidden>
+      <div class="paper-box memory-card"><h2 id="memoryText" class="sentence">어린 시절의 세계로 들어가고 있어요...</h2></div>
+    </section>
+
+    <section id="playScreen" class="play-layer" aria-label="비눗방울 놀이" hidden>
+      <div id="soap" class="soap" role="img" aria-label="손으로 움직이는 비누" hidden>
+        <img src="./assets/soap.png" alt="분홍색 비누" draggable="false" />
+        <span class="soap-ask">나를 끌어 줘!</span>
+      </div>
+      <div id="soapMeter" class="soap-meter" hidden><span>거품을 만들고 있어요. <b id="soapPercent">0%</b></span><i><em id="soapFill"></em></i></div>
+      <div id="activeControls" class="mini-controls" hidden>
+        <button id="settingsBtn" class="sketch-tab" type="button">놀이 설정</button>
+        <span id="cameraStatus" class="camera-indicator">손동작 인식 중</span>
+      </div>
+      <div id="scoreHud" class="score-cloud" hidden><span>점수</span><strong id="scoreValue">0</strong><small id="stageName">내 비눗방울</small></div>
+      <div id="timerHud" class="timer-cloud" hidden>남은 시간 <strong id="timeValue">20</strong>초</div>
+      <div id="gameHint" class="little-caption" hidden></div>
+    </section>
+
+    <section id="colorScreen" class="layer" aria-label="비눗방울 색깔 선택" hidden>
+      <div class="paper-box selection-card">
+        <div class="color-layout">
+          <div class="color-options">
+            <h2 class="sentence">네 비눗방울 색깔을 골라 봐요!</h2>
+            <div class="colors" id="colors">
+              <button type="button" class="color-chip selected" data-color="#79c3e3" aria-label="하늘색"><span class="color-dot" style="--dot:#79c3e3"></span>하늘</button>
+              <button type="button" class="color-chip" data-color="#f49aaa" aria-label="분홍색"><span class="color-dot" style="--dot:#f49aaa"></span>분홍</button>
+              <button type="button" class="color-chip" data-color="#d0b1ed" aria-label="보라색"><span class="color-dot" style="--dot:#d0b1ed"></span>보라</button>
+              <button type="button" class="color-chip" data-color="#a5d99c" aria-label="초록색"><span class="color-dot" style="--dot:#a5d99c"></span>초록</button>
+              <label class="color-chip custom-chip"><input id="colorPicker" type="color" value="#79c3e3" aria-label="다른 색깔 선택" /><span class="paint-icon">✎</span>다른 색</label>
+            </div>
+            <button id="chooseColor" class="paper-button" type="button">이 색깔로 할게요!</button>
+          </div>
+          <div class="bubble-preview-area" aria-label="선택 색깔 미리보기"><div class="bubble-preview-float"><canvas id="bubblePreviewCanvas" width="320" height="320" role="img" aria-label="실시간 비눗방울 색깔 미리보기"></canvas></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="messageScreen" class="layer" aria-label="놀이 안내" hidden>
+      <div class="paper-box message-card"><h2 id="messageTitle" class="sentence"></h2><div id="messageBody" class="message-body"></div><button id="messageContinue" class="paper-button" type="button">시작하기</button></div>
+    </section>
+
+    <section id="poseScreen" class="layer pose-layer" aria-label="기념사진 찍기" hidden>
+      <div class="pose-note"><h2 id="poseTitle">브이를 보여 주세요!</h2><p class="sentence" id="poseSub">손가락으로 브이 포즈를 보여 주세요.</p></div>
+    </section>
+
+    <section id="photoScreen" class="layer" aria-label="기념사진 결과" hidden>
+      <div class="paper-box photo-card"><h2>우리의 비눗방울 사진 ♡</h2><img id="photoPreview" alt="비눗방울 놀이 기념사진" /><div class="photo-score">오늘의 점수 <b id="photoPoints">0 / 200</b></div><button id="savePhoto" class="paper-button" type="button">사진 저장하기</button><div class="photo-links"><button id="goHome" class="paper-button small" type="button">집으로 돌아가기</button><button id="restartAll" class="paper-button small" type="button">처음부터 다시 시작하기</button></div></div>
+    </section>
+
+    <dialog id="settingsDialog" class="settings-dialog" aria-label="놀이 설정">
+      <div class="dialog-heading"><h2>놀이 설정</h2><button id="closeSettings" type="button" aria-label="닫기">✕</button></div>
+      <label for="speedRange">비눗방울 속도 <output id="speedOut">55%</output></label><input type="range" min="20" max="100" value="55" id="speedRange" />
+      <label for="sensitivityRange">손 인식 범위 <output id="sensitivityOut">70%</output></label><input type="range" min="30" max="100" value="70" id="sensitivityRange" />
+      <label for="pastelTintRange">카메라 파스텔 색감 <output id="pastelTintOut">14%</output></label><input type="range" min="0" max="35" value="14" id="pastelTintRange" />
+      <label for="bubbleDensityRange">비눗방울 개수 <output id="bubbleDensityOut">100%</output></label><input type="range" min="60" max="160" value="100" id="bubbleDensityRange" />
+      <button id="soundToggle" class="paper-button small" type="button">소리 켜짐 ♪</button><button id="finishSettings" class="paper-button small" type="button">닫기</button>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+  <script type="module" src="./game.js"></script>
+</body>
+</html>
