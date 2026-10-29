@@ -236,7 +236,7 @@ function spawnBubble(){
   let color=state.selectedColor;
   if(kind==='special')color='#f0ce6f';
   if(kind==='other'){const others=colors.filter(c=>c.toLowerCase()!==state.selectedColor.toLowerCase());color=others[Math.floor(Math.random()*others.length)]}
-  const r=random(27,47),x=random(r+7,Math.max(r+8,W-r-8));
+  const r=random(36,58),x=random(r+7,Math.max(r+8,W-r-8));
   // First round only is slower. Subsequent game retains original movement speed.
   const speed=(my?random(82,128):random(100,166))*(.71+state.speed/95);
   state.balls.push({x,baseX:x,y:-r-random(0,90),r,age:0,seed:random(0,7),speed,kind,color,settled:false});
